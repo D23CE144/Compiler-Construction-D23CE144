@@ -1,50 +1,41 @@
-def main():
-    # Input the number of input symbols
-    num_symbols = int(input("Enter number of input symbols: "))
-    
-    print("Input symbols: ", end="")
-    symbols = input().split()  # Input symbols as space-separated values
+class FiniteAutomaton:
+    def __init__(self, states, alphabet, transitions, start_state, accept_states):
+        self.states = states
+        self.alphabet = alphabet
+        self.transitions = transitions
+        self.start_state = start_state
+        self.accept_states = accept_states
 
-    # Input the number of states
-    num_states = int(input("Enter number of states: "))
+    def validate_string(self, input_string):
+        current_state = self.start_state
+        for symbol in input_string:
+            if (current_state, symbol) in self.transitions:
+                current_state = self.transitions[(current_state, symbol)]
+            else:
+                return "Invalid String"
+        return "Valid String" if current_state in self.accept_states else "Invalid String"
 
-    # Input the initial state
-    initial_state = int(input("Initial state: "))
+# Input reading
+num_symbols = int(input("Number of input symbols: "))
+alphabet = input("Input symbols: ").split()
+states = int(input("Enter number of states: "))
+start_state = int(input("Initial state: "))
+num_accepting = int(input("Number of accepting states: "))
+accept_states = set(map(int, input("Accepting states: ").split()))
 
-    # Input the number of accepting states
-    num_accept_states = int(input("Number of accepting states: "))
+# Reading transition table
+transitions = {}
+num_transitions = int(input("Enter number of transitions: "))
+print("Enter transitions in format: current_state input_symbol next_state")
+for _ in range(num_transitions):
+    state_from, symbol, state_to = input().split()
+    transitions[(int(state_from), symbol)] = int(state_to)
 
-    print("Accepting states: ", end="")
-    accept_states = list(map(int, input().split()))  # Input accepting states as space-separated values
+# Creating Finite Automaton
+fa = FiniteAutomaton(states, alphabet, transitions, start_state, accept_states)
 
-    # Input the transition table
-    print("Transition table (format: from_state input_symbol to_state):")
-    transition_table = {}
-    num_transitions = num_states * num_symbols  # Total transitions
-    for _ in range(num_transitions):
-        from_state, input_symbol, to_state = input().split()
-        from_state = int(from_state)
-        to_state = int(to_state)
-        transition_table[(from_state, input_symbol)] = to_state
+# Input string to validate
+input_string = input("Input string: ")
 
-    # Input the string to validate
-    input_string = input("Input string: ")
-
-    # Validate the string
-    current_state = initial_state
-    for char in input_string:
-        if (current_state, char) in transition_table:
-            current_state = transition_table[(current_state, char)]
-        else:
-            print("Invalid String")
-            return
-
-    # Check if the final state is an accepting state
-    if current_state in accept_states:
-        print("Invalid String")
-    else:
-        print("Valid String")
-
-
-if __name__ == "__main__":
-    main()
+# Output validation result
+print(fa.validate_string(input_string))
