@@ -1,46 +1,43 @@
 class RecursiveDescentParser:
     def __init__(self, input_string):
-        self.str = input_string.replace(" ", "")  # Remove spaces
-        self.ip = 0  # Position counter
-        self.f = 0  # Error flag
+        self.input = input_string.replace(" ", "")  # Remove spaces
+        self.index = 0
 
-    def S(self):
-        """S → ( L ) | a"""
-        if self.ip < len(self.str) and self.str[self.ip] == '(':
-            self.ip += 1
-            self.L()
-            if self.ip < len(self.str) and self.str[self.ip] == ')':
-                self.ip += 1
-            else:
-                self.f = 1  # Error: ')' expected
-        elif self.ip < len(self.str) and self.str[self.ip] == 'a':
-            self.ip += 1
-        else:
-            self.f = 1  # Error: Neither '(' nor 'a' found
+    def parse_S(self):
+        if self.index < len(self.input) and self.input[self.index] == 'a':
+            self.index += 1
+            return True
+        elif self.index < len(self.input) and self.input[self.index] == '(':
+            self.index += 1  # Consume '('
+            if self.parse_L():
+                if self.index < len(self.input) and self.input[self.index] == ')':
+                    self.index += 1  # Consume ')'
+                    return True
+            return False
+        return False
 
-    def L(self):
-        """L → S L'"""
-        self.S()
-        self.L2()
+    def parse_L(self):
+        if self.parse_S():
+            return self.parse_L_prime()
+        return False
 
-    def L2(self):
-        """L' → , S L' | ε"""
-        if self.ip < len(self.str) and self.str[self.ip] == ',':
-            self.ip += 1
-            self.S()
-            self.L2()
-        # ε case: Do nothing
+    def parse_L_prime(self):
+        if self.index < len(self.input) and self.input[self.index] == ',':
+            self.index += 1  # Consume ','
+            if self.parse_S():
+                return self.parse_L_prime()
+            return False
+        return True  # ε-production
 
     def validate(self):
-        """Start parsing and check if input is valid"""
-        self.S()  # Start from S
-        return self.f == 0 and self.ip == len(self.str)
+        return self.parse_S() and self.index == len(self.input)
 
 
-# Taking input from user
-user_input = input("Enter a string to validate: ").strip()
+# Test cases from the image
+test_cases = ["a", "(a)", "(a,a)", "(a,(a,a),a)", "(a,a),(a,a)", "a)", "(a", "a,a", "a,", "(a,a),a"]
 
-# Validate input
-parser = RecursiveDescentParser(user_input)
-result = "Valid string" if parser.validate() else "Invalid string"
-print(f"Input: {user_input} -> {result}")
+# Running test cases
+for test in test_cases:
+    parser = RecursiveDescentParser(test)
+    result = "Valid string" if parser.validate() else "Invalid string"
+    print(f"Input: {test} -> {result}")
